@@ -3,23 +3,23 @@
     "version": "0.0.0",
     "description": "RESTful API Server using Node JS",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "Alina Kanayinkal",
+        "email": "kana7985@stthomas.edu"
     },
     "contributors": [
         {
-            "name": "",
-            "email": ""
+            "name": "Ivan Jimenez",
+            "email": "jime3462@stthomas.edu"
         },
         {
-            "name": "",
-            "email": ""
+            "name": "Maddie Moeller",
+            "email": "moel6746@stthomas.edu"
         }
     ],
     "main": "server.js",
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/alina-kan/Project3-RESTful-API"
     },
     "dependencies": {
         "express": "^4.18.2",
