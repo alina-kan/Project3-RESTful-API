@@ -40,10 +40,37 @@ app.get('/neighborhoods', (req, res) => {
 });
 
 // GET request handler for crime incidents
-app.get('/incidents', (req, res) => {
+app.get('/incidents', (req, res) => { 
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let query = 'SELECT Incidents.case_number, Incidents.date_time, Incidents.code, \
+    Incidents.incident, Incidents.police_grid, Incidents.neighborhood_number, Incidents.block FROM Incidents \
+    ORDER BY Incidents.date_time DESC';
+    
+ 
+
+    db.all(query, (err, rows) => {
+        console.log(err);
+        //console.log(rows);
+      
+    let data = [];
+    
+    let dateTime = [];
+        for (i = 0; i < rows.length; i++) {
+            dateTime =rows[i].date_time.split('T');
+
+            data[i] = {"case_number":rows[i].case_number, "date":dateTime[0], "time":dateTime[1], 
+            "code":rows[i].code, "incident":rows[i].incident, "police_grid":rows[i].police_grid,
+            "neighborhood_number":rows[i].neighborhood_number, "block":rows[i].block};
+        }
+        
+        //console.log(data);
+        
+        res.status(200).type('json').send(data);
+        //res.status(200).type('json').send({}); // <-- you will need to change this
+    });
+
+
 });
 
 // PUT request handler for new crime incident
