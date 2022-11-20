@@ -44,18 +44,75 @@ app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
     let query = 'SELECT Incidents.case_number, Incidents.date_time, Incidents.code, \
-    Incidents.incident, Incidents.police_grid, Incidents.neighborhood_number, Incidents.block FROM Incidents \
-    ORDER BY Incidents.date_time DESC';
+    Incidents.incident, Incidents.police_grid, Incidents.neighborhood_number, Incidents.block FROM Incidents';
     
- 
+    let params = [];
+    let clause = 'WHERE';
+    if(req.query.hasOwnProperty('start_date')){
+        query = query + ' ' + clause + ' Incidents.date_time >= ?';
+        params.push(req.query.start_date);
+        clause = 'AND';
+    }
+    if(req.query.hasOwnProperty('end_date')){
+        query = query + ' ' + clause + ' Incidents.date_time <= ?';
+        params.push(req.query.end_date);
+        clause = 'AND';
+    }
+    if(req.query.hasOwnProperty('code')){
+        let code = req.query.code.split(',');
+        query = query + ' ' + clause + ' Incidents.code IN (?';
+        params.push(code[0]);
+        if(code.length > 0) {
+            for(let j = 1; j < code.length; j++) {
+                query = query + ' , ?';
+                params.push(code[1]);
+            }
+        }
+        query = query + ')';
+        clause = 'AND';
+    }
+    if(req.query.hasOwnProperty('grid')){
+        let split_grid = req.query.grid.split(',');
+        query = query + ' ' + clause + ' Incidents.police_grid IN (?';
+        params.push(split_grid[0]);
+        if(split_grid.length > 0) {
+            for(let j = 1; j < split_grid.length; j++) {
+                query = query + ' , ?';
+                params.push(split_grid[1]);
+            }
+        }
+        query = query + ')';
+        clause = 'AND';
+    }
+    if(req.query.hasOwnProperty('neighborhood')){
+        let neighborhood_num = req.query.neighborhood.split(',');
+        query = query + ' ' + clause + ' Incidents.neighborhood_number IN (?';
+        params.push(neighborhood_num[0]);
+        if(neighborhood_num.length > 0) {
+            for(let j = 1; j < neighborhood_num.length; j++) {
+                query = query + ' , ?';
+                params.push(neighborhood_num[1]);
+            }
+        }
+        query = query + ')';
+        clause = 'AND';
+    }
+    
+    query = query + ' ORDER BY Incidents.date_time DESC';
+    
+    if(req.query.hasOwnProperty('limit')){
+        query = query + ' LIMIT ?';
+        params.push(req.query.limit);
+    } else {
+        query = query + ' LIMIT 1000';
+    }
 
-    db.all(query, (err, rows) => {
-        console.log(err);
-        //console.log(rows);
-      
-    let data = [];
     
-    let dateTime = [];
+    db.all(query, params, (err, rows) => {
+        console.log(err);
+      
+        let data = [];
+        let dateTime = [];
         for (i = 0; i < rows.length; i++) {
             dateTime =rows[i].date_time.split('T');
 
@@ -64,12 +121,8 @@ app.get('/incidents', (req, res) => {
             "neighborhood_number":rows[i].neighborhood_number, "block":rows[i].block};
         }
         
-        //console.log(data);
-        
         res.status(200).type('json').send(data);
-        //res.status(200).type('json').send({}); // <-- you will need to change this
     });
-
 
 });
 
