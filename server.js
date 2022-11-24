@@ -29,7 +29,36 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
 app.get('/codes', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let query = 'SELECT Codes.code, Codes.incident_type FROM Codes';
+    let params = [];
+    if(req.query.hasOwnProperty('code')){
+        let code = req.query.code.split(',');
+        query = query + ' WHERE Codes.code IN (?';
+        params.push(parseFloat(code[0]));
+        if(code.length > 1) {
+            for(let j = 1; j < code.length; j++) {
+                query = query + ', ?';
+                params.push(parseFloat(code[j]));
+            }
+        }
+
+        query = query + ');';
+    };
+
+    db.all(query, params, (err, rows) => {
+        console.log(err);
+        
+        let data = [];
+        for (i = 0; i < rows.length; i++){
+            data[i] = {"code":rows[i].code,"type":rows[i].incident_type};
+        }
+        console.log(data);
+
+        
+
+    });
+
+    res.status(200).type('json').send('OK'); // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
