@@ -64,7 +64,43 @@ app.get('/codes', (req, res) => {
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
+
+    let query = 'SELECT Neighborhoods.neighborhood_number AS id, Neighborhoods.neighborhood_name AS name FROM Neighborhoods';
+
+    let params = [];
+    let clause = 'WHERE';
+
+    //get id and then get name of neighborhood
+    if (req.query.hasOwnProperty('id')){
+        let id = req.query.id.split(',');
+        query = query + ' ' + clause + ' Neighborhoods.neighborhood_number = ?';
+        params.push(id[0]);
+        if(id.length > 0) {
+            for(let j = 1; j < id.length; j++) {
+                query = query + ' , ?';
+                params.push(id[1]);
+            }
+        }
+        query = query + ')';
+        clause = 'AND';
+    }
+
+    if (req.query.hasOwnProperty('name')){
+        query = query + ' ' + clause + ' Neighborhoods.neighborhood_name = ?';
+        params.push(req.query.name);
+        clause = 'AND';
+    }
     
+    db.all(query, params, (err, rows) => {
+        console.log(err);
+        
+        let data = [];
+        for (i = 0; i < rows.length; i++){
+            data[i] = {"id":rows[i].neighborhood_number,"name":rows[i].neighborhood_name};
+        }
+        console.log(data);
+    });
+
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
