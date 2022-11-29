@@ -73,12 +73,11 @@ app.get('/neighborhoods', (req, res) => {
     //get id and then get name of neighborhood
     if (req.query.hasOwnProperty('id')){
         let id = req.query.id.split(',');
-        query = query + ' ' + clause + ' Neighborhoods.neighborhood_number = ?';
-        params.push(id[0]);
+        query = query + ' ' + clause + ' Neighborhoods.neighborhood_number IN (?';
         if(id.length > 0) {
-            for(let j = 1; j < id.length; j++) {
-                query = query + ' , ?';
-                params.push(id[1]);
+            for(let j = 0; j < id.length; j++) {
+                query = query + ', ?';
+                params.push(id[j]);
             }
         }
         query = query + ')';
@@ -91,17 +90,22 @@ app.get('/neighborhoods', (req, res) => {
         clause = 'AND';
     }
     
+    console.log(query);
+
     db.all(query, params, (err, rows) => {
         console.log(err);
         
         let data = [];
         for (i = 0; i < rows.length; i++){
-            data[i] = {"id":rows[i].neighborhood_number,"name":rows[i].neighborhood_name};
+            data[i] = {"id":rows[i].id,"name":rows[i].name};
+
         }
         console.log(data);
+        res.status(200).type('json').send(data);
     });
 
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    //res.status(200).type('json').send({}); // <-- you will need to change this
+    
 });
 
 // GET request handler for crime incidents
