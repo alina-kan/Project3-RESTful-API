@@ -97,7 +97,7 @@ app.get('/neighborhoods', (req, res) => {
         
         let data = [];
         for (i = 0; i < rows.length; i++){
-            data[i] = {"id":rows[i].id,"name":rows[i].name};
+            data[i] = {"id":rows[i].id, "name":rows[i].name};
 
         }
         console.log(data);
@@ -189,6 +189,7 @@ app.get('/incidents', (req, res) => {
             "code":rows[i].code, "incident":rows[i].incident, "police_grid":rows[i].police_grid,
             "neighborhood_number":rows[i].neighborhood_number, "block":rows[i].block};
         }
+        console.log(data);
         
         res.status(200).type('json').send(data);
     });
