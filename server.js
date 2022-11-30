@@ -206,35 +206,88 @@ app.put('/new-incident', (req, res) => {
         FROM Incidents WHERE Incidents.case_number = ?'; 
     let params = [];
 
-    if(req.query.hasOwnProperty('case_number')){
-        params.push(req.query.case_number);
-    }
+    db.all(query, params, (err, rows) => {
+        console.log(err);
+        console.log(data);
 
-    if (params.length > 0){
-        //send 500 because it exists
-        req.status = 500;
-    } else {
-        req.status = 200;
-        //insert new case; get all info for case
-        let insert_query = "INSERT INTO Incidents (Incidents.case_number, Incidents.date_time, Incidents.code, \
-            Incidents.incident, Incidents.police_grid, Incidents.neighborhood_number, Incidents.block) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        let insert_params = [];
-        
-        //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
-        
-
-    }
-
-
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+        if (rows.length > 0) {
+            res.status(500).type('txt').send(err);
+            //something about error
+        }
+        else {
+            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, \
+                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            db.run(insert_query, params, (err) => {
+                if (err) {
+                    res.status(404).type('txt').send(err);
+                }
+                else {
+                    //insert new case; get all info for case
+                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+                    res.status(200).type('json').send(
+                        {
+                            case_number: req.body.case_number,
+                            date_time: req.body.date + "T" + req.body.time,
+                            code: req.body.code,
+                            incident: req.body.incident,
+                            police_grid: req.body.police_grid,
+                            neighborhood_number: req.body.neighborhood_number,
+                            block: req.body.block,
+                            success: "yes"
+                        }
+                    );
+                }
+            });
+            
+        }
+    });
 });
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
     console.log(req.body); // uploaded data
+       
+    let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
+        FROM Incidents WHERE Incidents.case_number = ?'; 
+    let params = [];
+
+    db.all(query, params, (err, rows) => {
+        console.log(err);
+        console.log(data);
+
+        if (rows.length < 1) {
+            res.status(500).type('txt').send(err);
+            //doesn't exist
+        }
+        else {
+            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, \
+                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            db.run(insert_query, params, (err) => {
+                if (err) {
+                    res.status(404).type('txt').send(err);
+                }
+                else {
+                    //insert new case; get all info for case
+                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+                    res.status(200).type('json').send(
+                        {
+                            case_number: req.body.case_number,
+                            date_time: req.body.date + "T" + req.body.time,
+                            code: req.body.code,
+                            incident: req.body.incident,
+                            police_grid: req.body.police_grid,
+                            neighborhood_number: req.body.neighborhood_number,
+                            block: req.body.block,
+                            success: "yes"
+                        }
+                    );
+                }
+            });
+            
+        }
+    });
     
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    //res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
 
