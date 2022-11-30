@@ -199,6 +199,33 @@ app.get('/incidents', (req, res) => {
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
+
+    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    
+    let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
+        FROM Incidents WHERE Incidents.case_number = ?'; 
+    let params = [];
+
+    if(req.query.hasOwnProperty('case_number')){
+        params.push(req.query.case_number);
+    }
+
+    if (params.length > 0){
+        //send 500 because it exists
+        req.status = 500;
+    } else {
+        req.status = 200;
+        //insert new case; get all info for case
+        let insert_query = "INSERT INTO Incidents (Incidents.case_number, Incidents.date_time, Incidents.code, \
+            Incidents.incident, Incidents.police_grid, Incidents.neighborhood_number, Incidents.block) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        let insert_params = [];
+        
+        //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+        
+
+    }
+
+
     
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
