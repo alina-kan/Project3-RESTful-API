@@ -54,11 +54,11 @@ app.get('/codes', (req, res) => {
         }
         console.log(data);
 
-        
+        res.status(200).type('json').send(data);
 
     });
 
-    res.status(200).type('json').send('OK'); // <-- you will need to change this
+    //res.status(200).type('json').send('OK'); // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
