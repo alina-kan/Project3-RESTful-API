@@ -224,17 +224,18 @@ app.put('/new-incident', (req, res) => {
                 else {
                     //insert new case; get all info for case
                     //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
-                    res.status(200).type('json').send(
-                        {
-                            case_number: req.body.case_number,
-                            date_time: req.body.date + "T" + req.body.time,
-                            code: req.body.code,
-                            incident: req.body.incident,
-                            police_grid: req.body.police_grid,
-                            neighborhood_number: req.body.neighborhood_number,
-                            block: req.body.block,
-                            success: "yes"
-                        }
+                    res.status(200).type('json').send("ok"
+                       // {
+                            // case_number: req.body.case_number,
+                            // date_time: req.body.date + "T" + req.body.time,
+                            // code: req.body.code,
+                            // incident: req.body.incident,
+                            // police_grid: req.body.police_grid,
+                            // neighborhood_number: req.body.neighborhood_number,
+                            // block: req.body.block,
+                            // success: "yes"
+                            
+                       // }
                     );
                 }
             });
@@ -260,15 +261,12 @@ app.delete('/remove-incident', (req, res) => {
             //doesn't exist
         }
         else {
-            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, \
-                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            let insert_query = "DELETE FROM Incidents WHERE Incidents.case_number = ?";
             db.run(insert_query, params, (err) => {
                 if (err) {
                     res.status(404).type('txt').send(err);
                 }
                 else {
-                    //insert new case; get all info for case
-                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
                     res.status(200).type('json').send(
                         {
                             case_number: req.body.case_number,
