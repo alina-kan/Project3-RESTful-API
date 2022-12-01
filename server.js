@@ -206,11 +206,11 @@ app.put('/new-incident', (req, res) => {
         FROM Incidents WHERE Incidents.case_number = ?'; 
     let params = [];
 
-    db.all(query, params, (err, rows) => {
-        console.log(err);
+    db.all(query, (err, rows) => {
+        //console.log(err);
         console.log(rows);
 
-        if (rows.length() > 0) {
+        if (typeof rows !== 'undefined') {
             res.status(500).type('txt').send(err);
             //something about error
         }
