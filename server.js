@@ -10,7 +10,7 @@ let sqlite3 = require('sqlite3');
 let db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
 let app = express();
-let port = 8000;
+let port = 8005;
 
 app.use(express.json());
 
@@ -208,9 +208,9 @@ app.put('/new-incident', (req, res) => {
 
     db.all(query, params, (err, rows) => {
         console.log(err);
-        console.log(data);
+        console.log(rows);
 
-        if (rows.length > 0) {
+        if (rows.length() > 0) {
             res.status(500).type('txt').send(err);
             //something about error
         }
@@ -224,19 +224,7 @@ app.put('/new-incident', (req, res) => {
                 else {
                     //insert new case; get all info for case
                     //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
-                    res.status(200).type('json').send("ok"
-                       // {
-                            // case_number: req.body.case_number,
-                            // date_time: req.body.date + "T" + req.body.time,
-                            // code: req.body.code,
-                            // incident: req.body.incident,
-                            // police_grid: req.body.police_grid,
-                            // neighborhood_number: req.body.neighborhood_number,
-                            // block: req.body.block,
-                            // success: "yes"
-                            
-                       // }
-                    );
+                    res.status(200).type('txt').send('OK');
                 }
             });
             
@@ -254,7 +242,7 @@ app.delete('/remove-incident', (req, res) => {
 
     db.all(query, params, (err, rows) => {
         console.log(err);
-        console.log(data);
+        console.log(rows);
 
         if (rows.length < 1) {
             res.status(500).type('txt').send(err);
@@ -267,7 +255,18 @@ app.delete('/remove-incident', (req, res) => {
                     res.status(404).type('txt').send(err);
                 }
                 else {
-                    res.status(200).type('json').send(
+                    //insert new case; get all info for case
+                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+                    res.status(200).type('txt').send('OK');
+                }
+            });
+            
+        }
+    });
+    
+    //res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    /* 
+    res.status(200).type('json').send(
                         {
                             case_number: req.body.case_number,
                             date_time: req.body.date + "T" + req.body.time,
@@ -279,13 +278,7 @@ app.delete('/remove-incident', (req, res) => {
                             success: "yes"
                         }
                     );
-                }
-            });
-            
-        }
-    });
-    
-    //res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    */
 });
 
 
