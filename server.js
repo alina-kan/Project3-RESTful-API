@@ -7,10 +7,22 @@ let express = require('express');
 let sqlite3 = require('sqlite3');
 
 
+
 let db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
 let app = express();
 let port = 8005;
+
+
+app.use(function (req, res, next) {
+    //Enabling CORS
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, \
+    Accept, x-client-key, x-client-token, x-client-secret, Authorization");
+      next();
+    });
+
 
 app.use(express.json());
 
@@ -54,11 +66,11 @@ app.get('/codes', (req, res) => {
         }
         console.log(data);
 
-        res.status(200).type('json').send(data);
-
+        
+    res.status(200).type('json').send(data);
     });
 
-    //res.status(200).type('json').send('OK'); // <-- you will need to change this
+     // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
@@ -202,32 +214,21 @@ app.put('/new-incident', (req, res) => {
 
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    //let query = 'SELECT Incidents.case_number FROM Incidents WHERE case_number IN (SELECT case_number FROM Incidents WHERE Incidents.case_number = ?);'
-    //let query = 'SELECT EXISTS (SELECT 1 FROM Incidents WHERE case_number = ?)';
-    let query = 'SELECT * FROM Incidents WHERE Incidents.case_number = ' + req.body.case_number;
-    //let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
-    //    FROM Incidents WHERE Incidents.case_number = ?'; 
+    let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
+        FROM Incidents WHERE Incidents.case_number = ?'; 
     let params = [];
-    console.log(query)
 
-    db.all(query, (err, rows) => {
-        //console.log(err);
-        console.log("rows: ");
+    db.all(query, params, (err, rows) => {
+        console.log(err);
         console.log(rows);
 
         if (rows.length > 0) {
-            console.log("Row already exists, please enter valid case number");
             res.status(500).type('txt').send(err);
             //something about error
         }
         else {
-            console.log("Does not exist, adding in now...");
-        
-            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (" 
-                + req.body.case_number + ", '" + req.body.date + "T" + req.body.time + "', "
-                + req.body.code + ", '" + req.body.incident + "', " + req.body.police_grid + ", " + req.body.neighborhood_number + ", '"
-                + req.body.block + "')";
-            console.log(insert_query);
+            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, \
+                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)";
             db.run(insert_query, params, (err) => {
                 if (err) {
                     res.status(404).type('txt').send(err);
@@ -235,7 +236,6 @@ app.put('/new-incident', (req, res) => {
                 else {
                     //insert new case; get all info for case
                     //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
-                    console.log("Successfully added in, babie! :)");
                     res.status(200).type('txt').send('OK');
                 }
             });
@@ -247,39 +247,32 @@ app.put('/new-incident', (req, res) => {
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
     console.log(req.body); // uploaded data
-
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    let query = 'SELECT * FROM Incidents WHERE Incidents.case_number = ' + req.body.case_number;
+       
+    let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
+        FROM Incidents WHERE Incidents.case_number = ?'; 
     let params = [];
-    console.log(query)
 
-    db.all(query, (err, rows) => {
-        //console.log(err);
-        console.log("rows: ");
+    db.all(query, params, (err, rows) => {
+        console.log(err);
         console.log(rows);
 
         if (rows.length < 1) {
-            console.log("Row does not exist, please enter existing case number.");
             res.status(500).type('txt').send(err);
-            //something about error
+            //doesn't exist
         }
         else {
-            console.log("Exists, time to eradicate >:) ...");
-            let delete_query = "DELETE FROM Incidents WHERE Incidents.case_number = " + req.body.case_number;
-            console.log(delete_query);
-
-            db.run(delete_query, params, (err) => {
+            let insert_query = "DELETE FROM Incidents WHERE Incidents.case_number = ?";
+            db.run(insert_query, params, (err) => {
                 if (err) {
                     res.status(404).type('txt').send(err);
                 }
                 else {
                     //insert new case; get all info for case
                     //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
-                    console.log("Successfully removed, babie! :)");
                     res.status(200).type('txt').send('OK');
                 }
             });
+            
         }
     });
     
