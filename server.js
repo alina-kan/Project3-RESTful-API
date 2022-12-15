@@ -208,6 +208,134 @@ app.get('/incidents', (req, res) => {
 
 });
 
+//from WAHOO version
+// PUT request handler for new crime incident
+app.put('/new-incident', (req, res) => {
+    console.log(req.body); // uploaded data
+
+    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    
+    //let query = 'SELECT Incidents.case_number FROM Incidents WHERE case_number IN (SELECT case_number FROM Incidents WHERE Incidents.case_number = ?);'
+    //let query = 'SELECT EXISTS (SELECT 1 FROM Incidents WHERE case_number = ?)';
+    let query = 'SELECT * FROM Incidents WHERE Incidents.case_number = ' + req.body.case_number;
+    //let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
+    //    FROM Incidents WHERE Incidents.case_number = ?'; 
+    let params = [];
+    console.log(query)
+
+    db.all(query, (err, rows) => {
+        //console.log(err);
+        console.log("rows: ");
+        console.log(rows);
+
+        if (rows.length > 0) {
+            console.log("Row already exists, please enter valid case number");
+            res.status(500).type('txt').send(err);
+            //something about error
+        }
+        else {
+            console.log("Does not exist, adding in now...");
+        
+            let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (" 
+                + req.body.case_number + ", '" + req.body.date + "T" + req.body.time + "', "
+                + req.body.code + ", '" + req.body.incident + "', " + req.body.police_grid + ", " + req.body.neighborhood_number + ", '"
+                + req.body.block + "')";
+            console.log(insert_query);
+            db.run(insert_query, params, (err) => {
+                if (err) {
+                    res.status(404).type('txt').send(err);
+                }
+                else {
+                    //insert new case; get all info for case
+                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+                    console.log("Successfully added in, babie! :)");
+                    res.status(200).type('txt').send('OK');
+                }
+            });
+            
+        }
+    });
+});
+
+// DELETE request handler for new crime incident
+app.delete('/remove-incident', (req, res) => {
+    console.log(req.body); // uploaded data
+
+    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    
+    let query = 'SELECT * FROM Incidents WHERE Incidents.case_number = ' + req.body.case_number;
+    let params = [];
+    console.log(query)
+
+    db.all(query, (err, rows) => {
+        //console.log(err);
+        console.log("rows: ");
+        console.log(rows);
+
+        if (rows.length < 1) {
+            console.log("Row does not exist, please enter existing case number.");
+            res.status(500).type('txt').send(err);
+            //something about error
+        }
+        else {
+            console.log("Exists, time to eradicate >:) ...");
+            let delete_query = "DELETE FROM Incidents WHERE Incidents.case_number = " + req.body.case_number;
+            console.log(delete_query);
+
+            db.run(delete_query, params, (err) => {
+                if (err) {
+                    res.status(404).type('txt').send(err);
+                }
+                else {
+                    //insert new case; get all info for case
+                    //combine date and time inputs how?? try doing (?, ?T?, ?, ?, ?, ?, ?)
+                    console.log("Successfully removed, babie! :)");
+                    res.status(200).type('txt').send('OK');
+                }
+            });
+        }
+    });
+});
+
+
+// Create Promise for SQLite3 database SELECT query 
+function databaseSelect(query, params) {
+    return new Promise((resolve, reject) => {
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(rows);
+            }
+        })
+    })
+}
+
+// Create Promise for SQLite3 database INSERT or DELETE query
+function databaseRun(query, params) {
+    return new Promise((resolve, reject) => {
+        db.run(query, params, (err) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve();
+            }
+        });
+    })
+}
+
+
+// Start server - listen for client connections
+app.listen(port, () => {
+    console.log('Now listening on port ' + port);
+});
+
+
+//previous version 
+
+/*
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
@@ -215,8 +343,8 @@ app.put('/new-incident', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
     let query = 'SELECT Incidents.case_number FROM Incidents WHERE EXISTS (SELECT case_number \
-        FROM Incidents WHERE Incidents.case_number = ?'; 
-    let params = [];
+        FROM Incidents WHERE Incidents.case_number = ?)'; //old code, should be the one from "PUT AND DELETE WAHOO"
+    let params = []; //params not being updated here
 
     db.all(query, params, (err, rows) => {
         console.log(err);
@@ -228,7 +356,7 @@ app.put('/new-incident', (req, res) => {
         }
         else {
             let insert_query = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, \
-                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)"; //wrong here, just bring back the old one
             db.run(insert_query, params, (err) => {
                 if (err) {
                     res.status(404).type('txt').send(err);
@@ -290,40 +418,7 @@ app.delete('/remove-incident', (req, res) => {
                             success: "yes"
                         }
                     );
-    */
+    *
 });
 
-
-// Create Promise for SQLite3 database SELECT query 
-function databaseSelect(query, params) {
-    return new Promise((resolve, reject) => {
-        db.all(query, params, (err, rows) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(rows);
-            }
-        })
-    })
-}
-
-// Create Promise for SQLite3 database INSERT or DELETE query
-function databaseRun(query, params) {
-    return new Promise((resolve, reject) => {
-        db.run(query, params, (err) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve();
-            }
-        });
-    })
-}
-
-
-// Start server - listen for client connections
-app.listen(port, () => {
-    console.log('Now listening on port ' + port);
-});
+*/
