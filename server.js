@@ -57,6 +57,9 @@ app.get('/codes', (req, res) => {
         query = query + ');';
     };
 
+    console.log(query);
+    console.log(params);
+
     db.all(query, params, (err, rows) => {
         console.log(err);
         
@@ -152,14 +155,15 @@ app.get('/incidents', (req, res) => {
         let code = req.query.code.split(',');
         query = query + ' ' + clause + ' Incidents.code IN (?';
         params.push(code[0]);
-        if(code.length > 0) {
+        if(code.length > 1) {
             for(let j = 1; j < code.length; j++) {
-                query = query + ' , ?';
-                params.push(code[1]);
+                query = query + ', ?';
+                params.push(code[j]);
             }
         }
         query = query + ')';
         clause = 'AND';
+
     }
     if(req.query.hasOwnProperty('grid')){
         let split_grid = req.query.grid.split(',');
@@ -196,6 +200,10 @@ app.get('/incidents', (req, res) => {
     } else {
         query = query + ' LIMIT 1000';
     }
+    query = query + ';';
+
+    console.log(query);
+    console.log(params);
 
     
     db.all(query, params, (err, rows) => {
