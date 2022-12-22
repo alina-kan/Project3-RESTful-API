@@ -7,11 +7,11 @@ let express = require('express');
 let sqlite3 = require('sqlite3');
 
 
-
+let public_dir = path.join(__dirname, 'public');
 let db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
 let app = express();
-let port = 8000;
+let port = 8005;
 
 
 app.use(function (req, res, next) {
@@ -23,7 +23,9 @@ app.use(function (req, res, next) {
       next();
     });
 
-
+// Serve static files from 'public' directory
+// Serve static files from 'public' directory
+app.use(express.static(public_dir));
 app.use(express.json());
 
 // Open SQLite3 database (in read-only mode)
